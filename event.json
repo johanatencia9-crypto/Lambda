@@ -1,0 +1,13 @@
+{
+  "evento": {
+    "id": "123",
+    "idTrazabilidad": "TRZ-001",
+    "nombre": "solicitud.cancel.db",
+    "aplicacionEmisora": {
+      "nombreApp": "RPA",
+      "version": "1.0"
+    }
+  },
+  "validationStatus": 0,
+  "validationMessage": null
+}
