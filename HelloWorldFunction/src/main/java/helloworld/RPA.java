@@ -27,8 +27,7 @@ public class RPA implements RequestHandler<InputQueen, OutputResponse> {
 
 
         if (inputQueen == null || inputQueen.getEvento() == null) {
-            logger.log("Error: el input o el evento es nulo.\n");
-            output.setMensaje("Error: el input o el evento es nulo.");
+            logger.log("Error: el input o el evento es nulo.");
             return output;
         }
 

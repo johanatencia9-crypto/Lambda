@@ -1,5 +1,10 @@
 plugins {
     id 'java'
+    id 'jacoco'  // ← COBERTURA
+}
+
+jacoco {
+    toolVersion = "0.8.11"
 }
 
 repositories {
@@ -13,8 +18,17 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
-    implementation 'com.amazonaws:aws-lambda-java-core:1.2.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+}
 
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        html.required = true
+    }
 }
 
 sourceCompatibility = 20

@@ -1,13 +1,34 @@
 {
+  "id": "a929552a-0910-4fbe-ab2a-589170aeea49",
+  "idTrazabilidad": "Número caso Salesforce",
+  "nombre": "RPA",
   "evento": {
-    "id": "123",
-    "idTrazabilidad": "TRZ-001",
-    "nombre": "solicitud.cancel.db",
+    "id": "evt-001",
+    "idTrazabilidad": "trace-001",
+    "nombre": "EventoRPA",
     "aplicacionEmisora": {
-      "nombreApp": "RPA",
-      "version": "1.0"
+      "idAplicacionEmisora": "RPA",
+      "nombreAplicacionEmisora": "RPACIN",
+      "idTransaccionEmisora": "xx",
+      "fechaTransaccion": "2017-07-21T13:05:00"
+    },
+    "payload": {
+      "process": "Historia-Laboral",
+      "idUsuario": "RPA",
+      "TipoIdCliente": "CC",
+      "NumeroIdCliente": "123456",
+      "idSesion": "abc-123",
+      "idSolicitud": "SF-001",
+      "tipo": "tema sin apellido",
+      "subTipo": "detalle sin apellido",
+      "adjuntos": [
+        {
+          "id": "adjunto6_page_02",
+          "objectId": "obj-001",
+          "nombreArchivo": "adjunto6_page_02.pdf",
+          "numeroPagina": 1
+        }
+      ]
     }
-  },
-  "validationStatus": 0,
-  "validationMessage": null
+  }
 }

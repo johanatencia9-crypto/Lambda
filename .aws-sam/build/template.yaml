@@ -5,6 +5,10 @@ Description: 'LambdaRPA
   Sample SAM Template for LambdaRPA
 
   '
+Parameters:
+  UrlServicioExterno:
+    Type: String
+    Description: URL del servicio externo que la Lambda va a consumir
 Globals:
   Function:
     Timeout: 20
@@ -12,28 +16,37 @@ Globals:
     LoggingConfig:
       LogFormat: JSON
 Resources:
+  MySqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: MiColaDeProcesamiento
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: HelloWorldFunction
-      Handler: helloworld.RPA::handleRequest
+      Handler: helloworld.RPATranslatorLambda::handleRequest
       Runtime: java21
       Architectures:
       - x86_64
       MemorySize: 512
       Environment:
         Variables:
-          PARAM1: VALUE
+          URL_SERVICIO_EXTERNO:
+            Ref: UrlServicioExterno
       Events:
-        HelloWorld:
-          Type: Api
+        MySQSEvent:
+          Type: SQS
           Properties:
-            Path: /hello
-            Method: get
+            Queue:
+              Fn::GetAtt:
+              - MySqsQueue
+              - Arn
+            BatchSize: 10
     Metadata:
       SamResourceId: HelloWorldFunction
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
+    DependsOn: MySqsQueue
     Properties:
       Name:
         Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
@@ -46,19 +59,15 @@ Resources:
         Ref: ApplicationResourceGroup
       AutoConfigurationEnabled: 'true'
 Outputs:
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value:
-      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/hello/
   HelloWorldFunction:
     Description: Hello World Lambda Function ARN
     Value:
       Fn::GetAtt:
       - HelloWorldFunction
       - Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
+  MySqsQueueArn:
+    Description: ARN de la cola SQS
     Value:
       Fn::GetAtt:
-      - HelloWorldFunctionRole
+      - MySqsQueue
       - Arn

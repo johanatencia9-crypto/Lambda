@@ -4,6 +4,7 @@ version = 0.1
 
 [default.global.parameters]
 stack_name = "LambdaRPA"
+region = "us-east-1"
 
 [default.build.parameters]
 cached = true
@@ -16,9 +17,13 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
+s3_prefix = "LambdaRPA"
+disable_rollback = true
+parameter_overrides = [
+    "UrlServicioExterno=http://localhost:3001/echo"
+]
+image_repositories = []
 
-[default.package.parameters]
-resolve_s3 = true
 
 [default.sync.parameters]
 watch = true
