@@ -20,7 +20,8 @@ resolve_s3 = true
 s3_prefix = "LambdaRPA"
 disable_rollback = true
 parameter_overrides = [
-    "UrlServicioExterno=http://localhost:3001/echo"
+    "UrlServicioExterno=http://localhost:3001/echo",
+    "URL_SERVICIO_EXTERNO=https://cloud.uipath.com/identity_/connect/token"
 ]
 image_repositories = []
 

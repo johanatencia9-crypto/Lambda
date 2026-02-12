@@ -5,12 +5,16 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import utils.Servicio;
 import Model.Evento;
 import Model.InputQueen;
 import Model.OutputResponse;
+
+import static utils.Servicio.bodyToken;
 
 public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, String> {
 
@@ -99,13 +103,42 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
         String jsonBody;
 
         if (payload != null) {
-             jsonBody = MAPPER.writeValueAsString(payload);
+            Map<String, Object> mapPayload = (Map<String, Object>) payload;
+
+            jsonBody = MAPPER.writeValueAsString(payload);
 
             if (jsonBody.equals("{}")) {
                 logger.log("Payload detectado como vacío, enviando evento completo");
                 jsonBody = MAPPER.writeValueAsString(evento);
             } else {
-                logger.log("Payload recibido: " + jsonBody + "\n");
+                StringBuilder sb = new StringBuilder();
+
+                int size = mapPayload.size();
+                int count = 0;
+
+                for (Map.Entry<String, Object> entry : mapPayload.entrySet()) {
+
+                    count++;
+
+                    sb.append("\"")
+                            .append(entry.getKey())
+                            .append("\":\"")
+                            .append(entry.getValue().toString())
+                            .append("\"");
+
+                    if (count < size) {
+                        sb.append(",");
+                    }
+
+                    sb.append(System.lineSeparator());
+                }
+
+
+                jsonBody = sb.toString();
+
+
+
+
             }
 
             // Llamada a servicio
@@ -117,14 +150,17 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
 
 
         }
-
-
-        // Llamada a servicio externo
+        Map<String,Object> headersToken=new HashMap<>();
+        headersToken.put("Content-Type","application/x-www-form-urlencoded");
+        headersToken.put("Cookie","_cfuvid=VCYp4F4EUTofToNU8vju9vf_N_U0SA6Jm1fN8xXx5Wk-1770850471950-0.0.1.1-604800000");
+        String bodyToken=bodyToken();
+        String urlToken = System.getenv("URL_SERVICIO_TOKEN");
         String urlServicio = System.getenv("URL_SERVICIO_EXTERNO");
-        Servicio.llamarServicio(urlServicio, jsonBody, logger);
-        output.setPayload((Map<String, Object>) payload);
-
-        output.setMensaje("Evento procesado correctamente");
+        String Tokent= Servicio.obtenerToken(urlToken, logger, headersToken, bodyToken);
+//        Servicio.llamarServicio(urlServicio, jsonBody, logger,);
+//        output.setPayload((Map<String, Object>) payload);
+//
+//        output.setMensaje("Evento procesado correctamente");
     }
     private <T> T safeDeserialize(String json, Class<T> clazz) {
         try {
