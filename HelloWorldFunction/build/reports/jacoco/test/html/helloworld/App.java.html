@@ -16,22 +16,22 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 /**
  * Handler for requests to Lambda function.
  */
-<span class="nc" id="L19">public class App implements RequestHandler&lt;APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent&gt; {</span>
+<span class="fc" id="L19">public class App implements RequestHandler&lt;APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent&gt; {</span>
 
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-<span class="nc" id="L22">        Map&lt;String, String&gt; headers = new HashMap&lt;&gt;();</span>
-<span class="nc" id="L23">        headers.put(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
-<span class="nc" id="L24">        headers.put(&quot;X-Custom-Header&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L22">        Map&lt;String, String&gt; headers = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L23">        headers.put(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L24">        headers.put(&quot;X-Custom-Header&quot;, &quot;application/json&quot;);</span>
 
-<span class="nc" id="L26">        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()</span>
-<span class="nc" id="L27">                .withHeaders(headers);</span>
+<span class="fc" id="L26">        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()</span>
+<span class="fc" id="L27">                .withHeaders(headers);</span>
         try {
-<span class="nc" id="L29">            final String pageContents = this.getPageContents(&quot;https://checkip.amazonaws.com&quot;);</span>
-<span class="nc" id="L30">            String output = String.format(&quot;{ \&quot;message\&quot;: \&quot;hello world\&quot;, \&quot;location\&quot;: \&quot;%s\&quot; }&quot;, pageContents);</span>
+<span class="fc" id="L29">            final String pageContents = this.getPageContents(&quot;https://checkip.amazonaws.com&quot;);</span>
+<span class="fc" id="L30">            String output = String.format(&quot;{ \&quot;message\&quot;: \&quot;hello world\&quot;, \&quot;location\&quot;: \&quot;%s\&quot; }&quot;, pageContents);</span>
 
-<span class="nc" id="L32">            return response</span>
-<span class="nc" id="L33">                    .withStatusCode(200)</span>
-<span class="nc" id="L34">                    .withBody(output);</span>
+<span class="fc" id="L32">            return response</span>
+<span class="fc" id="L33">                    .withStatusCode(200)</span>
+<span class="fc" id="L34">                    .withBody(output);</span>
 <span class="nc" id="L35">        } catch (IOException e) {</span>
 <span class="nc" id="L36">            return response</span>
 <span class="nc" id="L37">                    .withBody(&quot;{}&quot;)</span>
@@ -40,9 +40,9 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
     }
 
     private String getPageContents(String address) throws IOException{
-<span class="nc" id="L43">        URL url = new URL(address);</span>
-<span class="nc" id="L44">        try(BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {</span>
-<span class="nc" id="L45">            return br.lines().collect(Collectors.joining(System.lineSeparator()));</span>
+<span class="fc" id="L43">        URL url = new URL(address);</span>
+<span class="fc" id="L44">        try(BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {</span>
+<span class="fc" id="L45">            return br.lines().collect(Collectors.joining(System.lineSeparator()));</span>
         }
     }
 }

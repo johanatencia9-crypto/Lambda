@@ -3,12 +3,15 @@ package helloworld;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import Model.Evento;
 import Model.InputQueen;
 import Model.OutputResponse;
+import lombok.extern.slf4j.Slf4j;
 import utils.Servicio;
 
 import java.net.URLEncoder;
@@ -17,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, String> {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -120,13 +124,32 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
         JsonNode payload = MAPPER.valueToTree(evento.getPayload());
 
         if (payload != null && !payload.isNull() && payload.size() > 0) {
+            MAPPER.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
+            MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            Servicio servicio = new Servicio();
             logger.log("Payload recibido: " + payload.toString() + "\n");
             Map<String, Object> payloadMap = MAPPER.convertValue(payload, Map.class);
             output.setPayload(payloadMap);
 
-            String jsonBody = MAPPER.writeValueAsString(payload);
-            // Servicio.llamarServicio(urlServicio, jsonBody, logger);
+            String jsonBody = "";
+            int count = 0;
+            int size = payloadMap.size();
+            for (Map.Entry<String, Object> entry : payloadMap.entrySet()) {
 
+                count++;
+
+                jsonBody +=String.format( "\"" + entry.getKey() + "\"" +":" + "\""+entry.getValue().toString() +"\"");
+
+                if (count < size) {
+                    jsonBody += ",";
+                }
+
+                jsonBody +=System.lineSeparator();
+            }
+
+            jsonBody = servicio.JsonBody(jsonBody);
+            // Servicio.llamarServicio(urlServicio, jsonBody, logger);
+//           log.info( "JSON Body generado para servicio externo: " + jsonBody + "\n");
             output.setMensaje("Payload procesado correctamente.");
         } else {
             logger.log("Payload no encontrado, enviando evento completo.\n");
@@ -159,7 +182,10 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
         String urlServicio = System.getenv("URL_SERVICIO_EXTERNO");
 
         String token = Servicio.obtenerToken(urlToken, logger, headersToken, bodyToken);
+
+
         logger.log("Token obtenido: " + token + "\n");
+
     }
 
     private <T> T safeDeserialize(String json, Class<T> clazz) {
