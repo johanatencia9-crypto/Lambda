@@ -4,18 +4,18 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import Model.Evento;
+import Model.InputQueen;
+import Model.OutputResponse;
+import utils.Servicio;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import utils.Servicio;
-import Model.Evento;
-import Model.InputQueen;
-import Model.OutputResponse;
-
 
 public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, String> {
 
@@ -23,9 +23,9 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
     private static LambdaLogger logger;
 
     @Override
-
     public String handleRequest(Map<String, Object> input, Context context) {
         logger = context.getLogger();
+
         try {
             logger.log("Evento raw: " + MAPPER.writeValueAsString(input) + "\n");
         } catch (JsonProcessingException e) {
@@ -63,9 +63,9 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
             logger.log("❌ CRÍTICO: " + e.getMessage() + "\n");
             throw new RuntimeException(e);
         }
+
         return "✅ OK";
     }
-
 
     private void procesarRecord(Map<String, Object> record) throws Exception {
         String body = (String) record.get("body");
@@ -80,81 +80,69 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
     }
 
     private void processEventSafe(InputQueen inputQueen) {
+        OutputResponse output = new OutputResponse();
         try {
-            processEvent(inputQueen);
-            logger.log("Evento procesado correctamente\n");
+            processEvent(inputQueen, output);
+            logger.log("✅ Evento procesado correctamente\n");
         } catch (Exception e) {
             logger.log("❌ Error procesando evento de negocio: " + e.getMessage() + "\n");
-            // Si quieres retry de SQS, relanza
             throw new RuntimeException(e);
         }
     }
 
-    private void processEvent(InputQueen inputQueen) throws Exception {
-
-        if (inputQueen == null || inputQueen.getEvento() == null) {
-            throw new IllegalArgumentException("Input o evento nulo");
+    private void processEvent(InputQueen inputQueen, OutputResponse output) throws Exception {
+        if (inputQueen == null || inputQueen.getComando() == null) {
+            logger.log("Error: el input o el comando es nulo.");
+            output.setMensaje("Input o comando nulo");
+            return;
         }
 
-        Evento evento = inputQueen.getEvento();
+        Map<String, Object> comando = inputQueen.getComando();
+
+        // Construimos el Evento a partir del comando
+        Evento evento = new Evento();
+        evento.setId((String) comando.get("id"));
+        evento.setIdTrazabilidad((String) comando.get("idTrazabilidad"));
+        evento.setNombre((String) comando.get("nombre"));
+
+        Object aplicacion = comando.get("aplicacionEmisora");
+        if (aplicacion instanceof Map) {
+            evento.setAplicacionEmisora((Map<String, Object>) aplicacion);
+        }
+
+        Object payloadObj = comando.get("payload");
+        if (payloadObj instanceof Map) {
+            evento.setPayload((Map<String, Object>) payloadObj);
+        }
+
         logger.log("Evento recibido: " + evento.getNombre() + ", ID: " + evento.getId() + "\n");
 
-        OutputResponse output = new OutputResponse();
-        Object payload = evento.getPayload();
-        String jsonBody;
+        JsonNode payload = MAPPER.valueToTree(evento.getPayload());
 
-        if (payload != null) {
-            Map<String, Object> mapPayload = (Map<String, Object>) payload;
+        if (payload != null && !payload.isNull() && payload.size() > 0) {
+            logger.log("Payload recibido: " + payload.toString() + "\n");
+            Map<String, Object> payloadMap = MAPPER.convertValue(payload, Map.class);
+            output.setPayload(payloadMap);
 
-            jsonBody = MAPPER.writeValueAsString(payload);
+            String jsonBody = MAPPER.writeValueAsString(payload);
+            // Servicio.llamarServicio(urlServicio, jsonBody, logger);
 
-            if (jsonBody.equals("{}")) {
-                logger.log("Payload detectado como vacío, enviando evento completo");
-                jsonBody = MAPPER.writeValueAsString(evento);
-            } else {
-                StringBuilder sb = new StringBuilder();
-
-                int size = mapPayload.size();
-                int count = 0;
-
-                for (Map.Entry<String, Object> entry : mapPayload.entrySet()) {
-
-                    count++;
-
-                    sb.append("\"")
-                            .append(entry.getKey())
-                            .append("\":\"")
-                            .append(entry.getValue().toString())
-                            .append("\"");
-
-                    if (count < size) {
-                        sb.append(",");
-                    }
-
-                    sb.append(System.lineSeparator());
-                }
-
-
-                jsonBody = sb.toString();
-
-
-
-
-            }
-
-            // Llamada a servicio
-
+            output.setMensaje("Payload procesado correctamente.");
         } else {
-            logger.log("Payload es null, enviando evento completo\n");
-            jsonBody = MAPPER.writeValueAsString(evento);
+            logger.log("Payload no encontrado, enviando evento completo.\n");
+            JsonNode eventoCompleto = MAPPER.valueToTree(evento);
+            String jsonBody = MAPPER.writeValueAsString(eventoCompleto);
+            // Servicio.llamarServicio(urlServicio, jsonBody, logger);
 
+            Map<String, Object> eventoCompletoMap = MAPPER.convertValue(eventoCompleto, Map.class);
+            output.setPayload(eventoCompletoMap);
 
-
+            output.setMensaje("Evento completo procesado.");
         }
+
+        // Ejemplo de token (opcional según tu lógica)
         Map<String,Object> headersToken=new HashMap<>();
         headersToken.put("Content-Type","application/x-www-form-urlencoded");
-        headersToken.put("Cookie","_cfuvid=VCYp4F4EUTofToNU8vju9vf_N_U0SA6Jm1fN8xXx5Wk-1770850471950-0.0.1.1-604800000");
-
         headersToken.put("scope","OR.Queues");
 
         String clientId = System.getenv("CLIENT_ID");
@@ -169,12 +157,11 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
 
         String urlToken = System.getenv("URL_SERVICIO_TOKEN");
         String urlServicio = System.getenv("URL_SERVICIO_EXTERNO");
-        String Tokent= Servicio.obtenerToken(urlToken, logger, headersToken, bodyToken);
-//        Servicio.llamarServicio(urlServicio, jsonBody, logger,);
-//        output.setPayload((Map<String, Object>) payload);
-//
-        output.setMensaje("Evento procesado correctamente");
+
+        String token = Servicio.obtenerToken(urlToken, logger, headersToken, bodyToken);
+        logger.log("Token obtenido: " + token + "\n");
     }
+
     private <T> T safeDeserialize(String json, Class<T> clazz) {
         try {
             return MAPPER.readValue(json, clazz);
@@ -184,3 +171,4 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
         }
     }
 }
+

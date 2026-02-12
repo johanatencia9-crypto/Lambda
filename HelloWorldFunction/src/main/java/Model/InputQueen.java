@@ -5,13 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 public class InputQueen {
-    private String id;
-    private String idTrazabilidad;
-    private String nombre;
-    private Evento evento;
+    private Map<String, Object> comando; // recibe todo el JSON principal
+
 }
