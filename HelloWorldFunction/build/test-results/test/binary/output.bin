@@ -1,0 +1,10 @@
+�🔍 TEST LOG: Evento raw: {"id":"a929552a-0910-4fbe-ab2a-589170aeea49","idTrazabilidad":"Número caso Salesforce","nombre":"RPA","evento":{"id":"evt-001","idTrazabilidad":"trace-001","nombre":"EventoRPA","aplicacionEmisora":{"idAplicacionEmisora":"RPA","nombreAplicacionEmisora":"RPACIN","idTransaccionEmisora":"xx","fechaTransaccion":"2017-07-21T13:05:00"},"payload":{"process":"Historia-Laboral","idUsuario":"RPA","TipoIdCliente":"CC","NumeroIdCliente":"123456","idSesion":"abc-123","idSolicitud":"SF-001","tipo":"tema sin apellido","subTipo":"detalle sin apellido","adjuntos":[{"id":"adjunto6_page_02","objectId":"obj-001","nombreArchivo":"adjunto6_page_02.pdf","numeroPagina":1}]}}}
+
++🔍 TEST LOG: No Records → JSON directo
+
+7🔍 TEST LOG: Evento recibido: EventoRPA, ID: evt-001
+
+k🔍 TEST LOG: ❌ Error procesando evento de negocio: Cannot invoke "String.length()" because "s" is null
+
+q🔍 TEST LOG: ❌ CRÍTICO: java.lang.NullPointerException: Cannot invoke "String.length()" because "s" is null
+

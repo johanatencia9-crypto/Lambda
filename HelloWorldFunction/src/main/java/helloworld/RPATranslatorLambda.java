@@ -6,6 +6,8 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +16,6 @@ import Model.Evento;
 import Model.InputQueen;
 import Model.OutputResponse;
 
-import static utils.Servicio.bodyToken;
 
 public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, String> {
 
@@ -153,14 +154,26 @@ public class RPATranslatorLambda implements RequestHandler<Map<String, Object>, 
         Map<String,Object> headersToken=new HashMap<>();
         headersToken.put("Content-Type","application/x-www-form-urlencoded");
         headersToken.put("Cookie","_cfuvid=VCYp4F4EUTofToNU8vju9vf_N_U0SA6Jm1fN8xXx5Wk-1770850471950-0.0.1.1-604800000");
-        String bodyToken=bodyToken();
+
+        headersToken.put("scope","OR.Queues");
+
+        String clientId = System.getenv("CLIENT_ID");
+        String clientSecret = System.getenv("CLIENT_SECRET");
+
+        String bodyToken = String.format(
+                "grant_type=client_credentials&scope=%s&client_id=%s&client_secret=%s",
+                URLEncoder.encode("OR.Queues", StandardCharsets.UTF_8),
+                URLEncoder.encode(clientId, StandardCharsets.UTF_8),
+                URLEncoder.encode(clientSecret, StandardCharsets.UTF_8)
+        );
+
         String urlToken = System.getenv("URL_SERVICIO_TOKEN");
         String urlServicio = System.getenv("URL_SERVICIO_EXTERNO");
         String Tokent= Servicio.obtenerToken(urlToken, logger, headersToken, bodyToken);
 //        Servicio.llamarServicio(urlServicio, jsonBody, logger,);
 //        output.setPayload((Map<String, Object>) payload);
 //
-//        output.setMensaje("Evento procesado correctamente");
+        output.setMensaje("Evento procesado correctamente");
     }
     private <T> T safeDeserialize(String json, Class<T> clazz) {
         try {

@@ -42,7 +42,7 @@ public class RPA implements RequestHandler<InputQueen, OutputResponse> {
                 Map<String, Object> payloadMap = mapper.convertValue(payload, Map.class);
                 output.setPayload(payloadMap);
                 String jsonBody = mapper.writeValueAsString(payload);
-                Servicio.llamarServicio(URL, jsonBody, context.getLogger());
+//                Servicio.llamarServicio(URL, jsonBody, context.getLogger());
 
                 output.setMensaje("Payload procesado correctamente.");
             } else {
@@ -52,7 +52,7 @@ public class RPA implements RequestHandler<InputQueen, OutputResponse> {
 
                 JsonNode eventoCompleto = mapper.valueToTree(evento);
                 String jsonBody = mapper.writeValueAsString(eventoCompleto);
-                Servicio.llamarServicio(URL, jsonBody, context.getLogger());
+//                Servicio.llamarServicio(URL, jsonBody, context.getLogger());
                 Map<String, Object> eventoCompletoMap = mapper.convertValue(eventoCompleto, Map.class);
                 output.setPayload(eventoCompletoMap);
                 output.setMensaje("Evento completo procesado.");

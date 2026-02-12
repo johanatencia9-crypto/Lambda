@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RPATranslatorLambda.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">HelloWorldFunction</a> &gt; <a href="index.source.html" class="el_package">helloworld</a> &gt; <span class="el_source">RPATranslatorLambda.java</span></div><h1>RPATranslatorLambda.java</h1><pre class="source lang-java linenums">package helloworld;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import utils.Servicio;
+import Model.Evento;
+import Model.InputQueen;
+import Model.OutputResponse;
+
+
+<span class="fc" id="L20">public class RPATranslatorLambda implements RequestHandler&lt;Map&lt;String, Object&gt;, String&gt; {</span>
+
+<span class="fc" id="L22">    private static final ObjectMapper MAPPER = new ObjectMapper();</span>
+    private static LambdaLogger logger;
+
+    @Override
+
+    public String handleRequest(Map&lt;String, Object&gt; input, Context context) {
+<span class="fc" id="L28">        logger = context.getLogger();</span>
+        try {
+<span class="fc" id="L30">            logger.log(&quot;Evento raw: &quot; + MAPPER.writeValueAsString(input) + &quot;\n&quot;);</span>
+<span class="nc" id="L31">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L32">            throw new RuntimeException(e);</span>
+<span class="fc" id="L33">        }</span>
+
+        try {
+            // ✅ PRIORIDAD 1: Extrae Records (case-insensitive)
+            @SuppressWarnings(&quot;unchecked&quot;)
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">            Object recordsObj = input.get(&quot;Records&quot;) != null ? input.get(&quot;Records&quot;) : input.get(&quot;records&quot;);</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">            if (recordsObj instanceof List) {</span>
+<span class="nc" id="L40">                List&lt;Map&lt;String, Object&gt;&gt; records = (List&lt;Map&lt;String, Object&gt;&gt;) recordsObj;</span>
+<span class="nc" id="L41">                logger.log(&quot;✅ SQS Batch detectado: &quot; + records.size() + &quot; records\n&quot;);</span>
+
+<span class="nc bnc" id="L43" title="All 2 branches missed.">                for (Map&lt;String, Object&gt; record : records) {</span>
+<span class="nc" id="L44">                    procesarRecord(record);</span>
+<span class="nc" id="L45">                }</span>
+<span class="nc" id="L46">                return &quot;✅ Batch procesado: &quot; + records.size();</span>
+            }
+
+            // ✅ PRIORIDAD 2: Fallback directo (no SQS)
+<span class="fc" id="L50">            logger.log(&quot;No Records → JSON directo\n&quot;);</span>
+<span class="fc" id="L51">            InputQueen directEvent = safeDeserialize(MAPPER.writeValueAsString(input), InputQueen.class);</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">            if (directEvent != null) {</span>
+<span class="nc" id="L53">                processEventSafe(directEvent);</span>
+<span class="nc" id="L54">                return &quot;✅ Directo OK&quot;;</span>
+            }
+
+            // ❌ Fallback final: trata como single body
+<span class="nc" id="L58">            logger.log(&quot;Intentando como single body\n&quot;);</span>
+<span class="nc" id="L59">            InputQueen singleBody = safeDeserialize(MAPPER.writeValueAsString(input), InputQueen.class);</span>
+<span class="nc" id="L60">            processEventSafe(singleBody);</span>
+
+<span class="fc" id="L62">        } catch (Exception e) {</span>
+<span class="fc" id="L63">            logger.log(&quot;❌ CRÍTICO: &quot; + e.getMessage() + &quot;\n&quot;);</span>
+<span class="fc" id="L64">            throw new RuntimeException(e);</span>
+<span class="nc" id="L65">        }</span>
+<span class="nc" id="L66">        return &quot;✅ OK&quot;;</span>
+    }
+
+
+    private void procesarRecord(Map&lt;String, Object&gt; record) throws Exception {
+<span class="nc" id="L71">        String body = (String) record.get(&quot;body&quot;);</span>
+<span class="nc" id="L72">        logger.log(&quot;Record body: &quot; + body + &quot;\n&quot;);</span>
+
+<span class="nc bnc" id="L74" title="All 4 branches missed.">        if (body == null || body.isBlank()) {</span>
+<span class="nc" id="L75">            throw new IllegalArgumentException(&quot;Body SQS vacío&quot;);</span>
+        }
+
+<span class="nc" id="L78">        InputQueen eventModel = MAPPER.readValue(body, InputQueen.class);</span>
+<span class="nc" id="L79">        processEventSafe(eventModel);</span>
+<span class="nc" id="L80">    }</span>
+
+    private void processEventSafe(InputQueen inputQueen) {
+        try {
+<span class="nc" id="L84">            processEvent(inputQueen);</span>
+<span class="nc" id="L85">            logger.log(&quot;Evento procesado correctamente\n&quot;);</span>
+<span class="fc" id="L86">        } catch (Exception e) {</span>
+<span class="fc" id="L87">            logger.log(&quot;❌ Error procesando evento de negocio: &quot; + e.getMessage() + &quot;\n&quot;);</span>
+            // Si quieres retry de SQS, relanza
+<span class="fc" id="L89">            throw new RuntimeException(e);</span>
+<span class="nc" id="L90">        }</span>
+<span class="nc" id="L91">    }</span>
+
+    private void processEvent(InputQueen inputQueen) throws Exception {
+
+<span class="pc bpc" id="L95" title="2 of 4 branches missed.">        if (inputQueen == null || inputQueen.getEvento() == null) {</span>
+<span class="nc" id="L96">            throw new IllegalArgumentException(&quot;Input o evento nulo&quot;);</span>
+        }
+
+<span class="fc" id="L99">        Evento evento = inputQueen.getEvento();</span>
+<span class="fc" id="L100">        logger.log(&quot;Evento recibido: &quot; + evento.getNombre() + &quot;, ID: &quot; + evento.getId() + &quot;\n&quot;);</span>
+
+<span class="fc" id="L102">        OutputResponse output = new OutputResponse();</span>
+<span class="fc" id="L103">        Object payload = evento.getPayload();</span>
+        String jsonBody;
+
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        if (payload != null) {</span>
+<span class="fc" id="L107">            Map&lt;String, Object&gt; mapPayload = (Map&lt;String, Object&gt;) payload;</span>
+
+<span class="fc" id="L109">            jsonBody = MAPPER.writeValueAsString(payload);</span>
+
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">            if (jsonBody.equals(&quot;{}&quot;)) {</span>
+<span class="nc" id="L112">                logger.log(&quot;Payload detectado como vacío, enviando evento completo&quot;);</span>
+<span class="nc" id="L113">                jsonBody = MAPPER.writeValueAsString(evento);</span>
+            } else {
+<span class="fc" id="L115">                StringBuilder sb = new StringBuilder();</span>
+
+<span class="fc" id="L117">                int size = mapPayload.size();</span>
+<span class="fc" id="L118">                int count = 0;</span>
+
+<span class="fc bfc" id="L120" title="All 2 branches covered.">                for (Map.Entry&lt;String, Object&gt; entry : mapPayload.entrySet()) {</span>
+
+<span class="fc" id="L122">                    count++;</span>
+
+<span class="fc" id="L124">                    sb.append(&quot;\&quot;&quot;)</span>
+<span class="fc" id="L125">                            .append(entry.getKey())</span>
+<span class="fc" id="L126">                            .append(&quot;\&quot;:\&quot;&quot;)</span>
+<span class="fc" id="L127">                            .append(entry.getValue().toString())</span>
+<span class="fc" id="L128">                            .append(&quot;\&quot;&quot;);</span>
+
+<span class="fc bfc" id="L130" title="All 2 branches covered.">                    if (count &lt; size) {</span>
+<span class="fc" id="L131">                        sb.append(&quot;,&quot;);</span>
+                    }
+
+<span class="fc" id="L134">                    sb.append(System.lineSeparator());</span>
+<span class="fc" id="L135">                }</span>
+
+
+<span class="fc" id="L138">                jsonBody = sb.toString();</span>
+
+
+
+
+            }
+
+            // Llamada a servicio
+
+<span class="fc" id="L147">        } else {</span>
+<span class="nc" id="L148">            logger.log(&quot;Payload es null, enviando evento completo\n&quot;);</span>
+<span class="nc" id="L149">            jsonBody = MAPPER.writeValueAsString(evento);</span>
+
+
+
+        }
+<span class="fc" id="L154">        Map&lt;String,Object&gt; headersToken=new HashMap&lt;&gt;();</span>
+<span class="fc" id="L155">        headersToken.put(&quot;Content-Type&quot;,&quot;application/x-www-form-urlencoded&quot;);</span>
+<span class="fc" id="L156">        headersToken.put(&quot;Cookie&quot;,&quot;_cfuvid=VCYp4F4EUTofToNU8vju9vf_N_U0SA6Jm1fN8xXx5Wk-1770850471950-0.0.1.1-604800000&quot;);</span>
+
+<span class="fc" id="L158">        headersToken.put(&quot;scope&quot;,&quot;OR.Queues&quot;);</span>
+
+<span class="fc" id="L160">        String clientId = System.getenv(&quot;CLIENT_ID&quot;);</span>
+<span class="fc" id="L161">        String clientSecret = System.getenv(&quot;CLIENT_SECRET&quot;);</span>
+
+<span class="pc" id="L163">        String bodyToken = String.format(</span>
+                &quot;grant_type=client_credentials&amp;scope=%s&amp;client_id=%s&amp;client_secret=%s&quot;,
+<span class="fc" id="L165">                URLEncoder.encode(&quot;OR.Queues&quot;, StandardCharsets.UTF_8),</span>
+<span class="nc" id="L166">                URLEncoder.encode(clientId, StandardCharsets.UTF_8),</span>
+<span class="nc" id="L167">                URLEncoder.encode(clientSecret, StandardCharsets.UTF_8)</span>
+        );
+
+<span class="nc" id="L170">        String urlToken = System.getenv(&quot;URL_SERVICIO_TOKEN&quot;);</span>
+<span class="nc" id="L171">        String urlServicio = System.getenv(&quot;URL_SERVICIO_EXTERNO&quot;);</span>
+<span class="nc" id="L172">        String Tokent= Servicio.obtenerToken(urlToken, logger, headersToken, bodyToken);</span>
+//        Servicio.llamarServicio(urlServicio, jsonBody, logger,);
+//        output.setPayload((Map&lt;String, Object&gt;) payload);
+//
+<span class="nc" id="L176">        output.setMensaje(&quot;Evento procesado correctamente&quot;);</span>
+<span class="nc" id="L177">    }</span>
+    private &lt;T&gt; T safeDeserialize(String json, Class&lt;T&gt; clazz) {
+        try {
+<span class="fc" id="L180">            return MAPPER.readValue(json, clazz);</span>
+<span class="nc" id="L181">        } catch (Exception e) {</span>
+<span class="nc" id="L182">            logger.log(&quot;Deserialización falló [&quot; + clazz.getSimpleName() + &quot;]: &quot; + e.getMessage() + &quot;\nJSON: &quot; + json);</span>
+<span class="nc" id="L183">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

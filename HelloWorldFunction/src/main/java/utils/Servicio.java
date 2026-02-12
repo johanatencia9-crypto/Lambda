@@ -52,7 +52,7 @@ public class Servicio {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(urlServicio))
                     .headers(headersArray)
-                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .POST(HttpRequest.BodyPublishers.ofString(body))// no tiene body, se envíavacío porque el servicio de token no lo requiere
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -75,14 +75,5 @@ public class Servicio {
         }
     }
 
-    public static String bodyToken() throws JsonProcessingException {
-        Map <String, String> bodyMap = Map.of(
-                "client_id", System.getenv("CLIENT_ID"),
-                "client_secret", System.getenv("CLIENT_SECRET"),
-                "grant_type", "client_credentials"
-        );
 
-        String body=MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(bodyMap);
-        return body;
-    }
 }
