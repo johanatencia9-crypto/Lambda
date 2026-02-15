@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Model.EventoTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-02-14T17:47:16" hostname="2MQ5111W0X" time="0.043">
+  <properties/>
+  <testcase name="payloadYAplicacionEmisora_PuedenSerNulos()" classname="Model.EventoTest" time="0.03"/>
+  <testcase name="gettersYSetters_Basico()" classname="Model.EventoTest" time="0.007"/>
+  <testcase name="modificarPayloadYAplicacionEmisora_DebeActualizarCorrectamente()" classname="Model.EventoTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

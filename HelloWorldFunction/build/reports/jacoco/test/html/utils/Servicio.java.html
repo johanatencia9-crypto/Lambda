@@ -1,78 +1,147 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Servicio.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">HelloWorldFunction</a> &gt; <a href="index.source.html" class="el_package">utils</a> &gt; <span class="el_source">Servicio.java</span></div><h1>Servicio.java</h1><pre class="source lang-java linenums">package utils;
 
+import Model.Evento;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-<span class="nc" id="L14">public class Servicio {</span>
+<span class="fc" id="L22">public class Servicio {</span>
 
-<span class="nc" id="L16">    private static final ObjectMapper MAPPER = new ObjectMapper();</span>
+<span class="fc" id="L24">    private static Logger logger = LoggerFactory.getLogger(Servicio.class);</span>
+<span class="fc" id="L25">    private static final ObjectMapper MAPPER = new ObjectMapper();</span>
 
     public static void llamarServicio(String urlServicio, String body, LambdaLogger logger, Map&lt;String,Object&gt; headers) {
         try {
-<span class="nc" id="L20">            String[] headersArray = headers.entrySet().stream()</span>
-<span class="nc" id="L21">                    .flatMap(e -&gt; Stream.of(e.getKey(), e.getValue().toString()))</span>
-<span class="nc" id="L22">                    .toArray(String[]::new);</span>
-<span class="nc" id="L23">            logger.log(&quot;[INFO] body &quot; +body+ &quot;\n&quot;);</span>
-<span class="nc" id="L24">            HttpClient client = HttpClient.newHttpClient();</span>
-<span class="nc" id="L25">            HttpRequest request = HttpRequest.newBuilder()</span>
-<span class="nc" id="L26">                    .uri(URI.create(urlServicio))</span>
-<span class="nc" id="L27">                    .headers(headersArray)</span>
-<span class="nc" id="L28">                    .POST(HttpRequest.BodyPublishers.ofString(body))</span>
-<span class="nc" id="L29">                    .build();</span>
+<span class="fc" id="L29">            String[] headersArray = headers.entrySet().stream()</span>
+<span class="fc" id="L30">                    .flatMap(e -&gt; Stream.of(e.getKey(), e.getValue().toString()))</span>
+<span class="fc" id="L31">                    .toArray(String[]::new);</span>
+<span class="fc" id="L32">            logger.log(&quot;[INFO] body &quot; +body+ &quot;\n&quot;);</span>
+<span class="fc" id="L33">            HttpClient client = HttpClient.newHttpClient();</span>
+<span class="fc" id="L34">            HttpRequest request = HttpRequest.newBuilder()</span>
+<span class="fc" id="L35">                    .uri(URI.create(urlServicio))</span>
+<span class="fc" id="L36">                    .headers(headersArray)</span>
+<span class="fc" id="L37">                    .POST(HttpRequest.BodyPublishers.ofString(body))</span>
+<span class="fc" id="L38">                    .build();</span>
 
 
 
-<span class="nc" id="L33">            HttpResponse&lt;String&gt; response = client.send(request, HttpResponse.BodyHandlers.ofString());</span>
+<span class="fc" id="L42">            HttpResponse&lt;String&gt; response = client.send(request, HttpResponse.BodyHandlers.ofString());</span>
 
             // Log en CloudWatch usando LambdaLogger
-<span class="nc" id="L36">            logger.log(&quot;[INFO] Respuesta del servicio: &quot; + response.statusCode() + &quot; - &quot; + response.body() + &quot;\n&quot;);</span>
+<span class="fc" id="L45">            logger.log(&quot;[INFO] Respuesta del servicio: &quot; + response.statusCode() + &quot; - &quot; + response.body() + &quot;\n&quot;);</span>
 
-<span class="nc" id="L38">        } catch (Exception e) {</span>
+<span class="fc" id="L47">        } catch (Exception e) {</span>
             // Log de error en CloudWatch
-<span class="nc" id="L40">            logger.log(&quot;[ERROR] Error al llamar el servicio: &quot; + e.getMessage() + &quot;\n&quot;);</span>
-<span class="nc" id="L41">            e.printStackTrace();</span>
-<span class="nc" id="L42">        }</span>
-<span class="nc" id="L43">    }</span>
+<span class="fc" id="L49">            logger.log(&quot;[ERROR] Error al llamar el servicio: &quot; + e.getMessage() + &quot;\n&quot;);</span>
+<span class="fc" id="L50">            e.printStackTrace();</span>
+<span class="fc" id="L51">        }</span>
+<span class="fc" id="L52">    }</span>
 
     public static String obtenerToken(String urlServicio, LambdaLogger logger, Map&lt;String,Object&gt; headers,String body) {
         try {
-<span class="nc" id="L47">            String[] headersArray = headers.entrySet().stream()</span>
-<span class="nc" id="L48">                    .flatMap(e -&gt; Stream.of(e.getKey(), e.getValue().toString()))</span>
-<span class="nc" id="L49">                    .toArray(String[]::new);</span>
+<span class="fc" id="L56">            String[] headersArray = headers.entrySet().stream()</span>
+<span class="fc" id="L57">                    .flatMap(e -&gt; Stream.of(e.getKey(), e.getValue().toString()))</span>
+<span class="fc" id="L58">                    .toArray(String[]::new);</span>
 
-<span class="nc" id="L51">            HttpClient client = HttpClient.newHttpClient();</span>
-<span class="nc" id="L52">            HttpRequest request = HttpRequest.newBuilder()</span>
-<span class="nc" id="L53">                    .uri(URI.create(urlServicio))</span>
-<span class="nc" id="L54">                    .headers(headersArray)</span>
-<span class="nc" id="L55">                    .POST(HttpRequest.BodyPublishers.ofString(body))// no tiene body, se envíavacío porque el servicio de token no lo requiere</span>
-<span class="nc" id="L56">                    .build();</span>
+<span class="fc" id="L60">            HttpClient client = HttpClient.newHttpClient();</span>
+<span class="fc" id="L61">            HttpRequest request = HttpRequest.newBuilder()</span>
+<span class="fc" id="L62">                    .uri(URI.create(urlServicio))</span>
+<span class="fc" id="L63">                    .headers(headersArray)</span>
+<span class="fc" id="L64">                    .POST(HttpRequest.BodyPublishers.ofString(body))// no tiene body, se envíavacío porque el servicio de token no lo requiere</span>
+<span class="fc" id="L65">                    .build();</span>
 
-<span class="nc" id="L58">            HttpResponse&lt;String&gt; response = client.send(request, HttpResponse.BodyHandlers.ofString());</span>
+<span class="fc" id="L67">            HttpResponse&lt;String&gt; response = client.send(request, HttpResponse.BodyHandlers.ofString());</span>
 
-<span class="nc" id="L60">            logger.log(&quot;[INFO] Respuesta del servicio de token: &quot; + response.statusCode() + &quot; - &quot; + response.body() + &quot;\n&quot;);</span>
+<span class="fc" id="L69">            logger.log(&quot;[INFO] Respuesta del servicio de token: &quot; + response.statusCode() + &quot; - &quot; + response.body() + &quot;\n&quot;);</span>
 
-<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (response.statusCode() == 200) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (response.statusCode() == 200) {</span>
                 // Parsear JSON y extraer access_token
-<span class="nc" id="L64">                Map&lt;String, Object&gt; json = MAPPER.readValue(response.body(), Map.class);</span>
-<span class="nc bnc" id="L65" title="All 2 branches missed.">                String token = json.get(&quot;access_token&quot;) != null ? (String) json.get(&quot;access_token&quot;) : null;</span>
-<span class="nc" id="L66">                return token;</span>
+<span class="fc" id="L73">                Map&lt;String, Object&gt; json = MAPPER.readValue(response.body(), Map.class);</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">                String token = json.get(&quot;access_token&quot;) != null ? (String) json.get(&quot;access_token&quot;) : null;</span>
+<span class="fc" id="L75">                return token;</span>
             } else {
-<span class="nc" id="L68">                logger.log(&quot;[ERROR] Error al obtener token: Código de estado &quot; + response.statusCode() + &quot;\n&quot;);</span>
-<span class="nc" id="L69">                return null;</span>
+<span class="fc" id="L77">                logger.log(&quot;[ERROR] Error al obtener token: Código de estado &quot; + response.statusCode() + &quot;\n&quot;);</span>
+<span class="fc" id="L78">                return null;</span>
             }
-<span class="nc" id="L71">        } catch (Exception e) {</span>
-<span class="nc" id="L72">            logger.log(&quot;[ERROR] Excepción al obtener token: &quot; + e.getMessage() + &quot;\n&quot;);</span>
-<span class="nc" id="L73">            e.printStackTrace();</span>
-<span class="nc" id="L74">            return null;</span>
+<span class="fc" id="L80">        } catch (Exception e) {</span>
+<span class="fc" id="L81">            logger.log(&quot;[ERROR] Excepción al obtener token: &quot; + e.getMessage() + &quot;\n&quot;);</span>
+<span class="fc" id="L82">            e.printStackTrace();</span>
+<span class="fc" id="L83">            return null;</span>
         }
+    }
+
+    public static String JsonBody(String contenido, Evento evento) throws JsonProcessingException {
+<span class="fc" id="L88">        ObjectMapper mapper = new ObjectMapper();</span>
+
+        // Limpiar caracteres de control invisibles
+//        Map&lt;String, Object&gt; contenidoLimpio = limpiarStrings(contenido);
+
+        // Mantener UTF-8 real, sin escapes
+<span class="fc" id="L94">        mapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);</span>
+<span class="fc" id="L95">        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);</span>
+
+        // Construir itemData
+<span class="fc" id="L98">        Map&lt;String, Object&gt; itemData = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L99">        itemData.put(&quot;Name&quot;, &quot;ColaRetractosDigitalesPorvenir&quot;);</span>
+<span class="fc" id="L100">        itemData.put(&quot;Priority&quot;, &quot;Normal&quot;);</span>
+<span class="fc" id="L101">        itemData.put(&quot;SpecificContent&quot;, contenido);</span>
+<span class="fc" id="L102">        itemData.put(&quot;Reference&quot;, &quot;CC_123456789&quot;);</span>
+<span class="fc" id="L103">        itemData.put(&quot;Progress&quot;, &quot;Salesforce&quot;);</span>
+
+<span class="fc" id="L105">        Map&lt;String, Object&gt; jsonMap = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L106">        jsonMap.put(&quot;itemData&quot;, itemData);</span>
+
+<span class="fc" id="L108">        String jsonString =&quot;&quot;;</span>
+
+
+
+<span class="fc" id="L112">        jsonString=String.format(&quot;&quot;&quot;</span>
+            {
+              &quot;itemData&quot;: {
+                &quot;Name&quot;: &quot;ColaRetractosDigitalesPorvenir&quot;,
+                &quot;Priority&quot;: &quot;Normal&quot;,
+                &quot;SpecificContent&quot;:{
+                  %s
+                },
+                &quot;Reference&quot;: &quot;%s&quot;,
+                &quot;Progress&quot;: &quot;%s&quot;
+              }
+            }
+<span class="pc bpc" id="L124" title="1 of 6 branches missed.">            &quot;&quot;&quot;,contenido,evento.getId(),evento.getAplicacionEmisora().get(&quot;nombreAplicacionEmisora&quot;) != &quot;&quot; &amp; evento.getAplicacionEmisora().get(&quot;nombreAplicacionEmisora&quot;)!=null ? evento.getAplicacionEmisora().get(&quot;nombreAplicacionEmisora&quot;).toString() : &quot;Desconocida&quot;);</span>
+<span class="fc" id="L125">        logger.info(&quot;JSON Body generado: &quot; + jsonString);</span>
+<span class="fc" id="L126">        return jsonString;</span>
+    }
+
+
+    private static Map&lt;String, Object&gt; limpiarStrings(Map&lt;String, Object&gt; contenido) {
+<span class="fc" id="L131">        return contenido.entrySet().stream()</span>
+<span class="fc" id="L132">                .collect(Collectors.toMap(</span>
+                        Map.Entry::getKey,
+                        entry -&gt; {
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">                            if (entry.getValue() instanceof String str) {</span>
+                                // Elimina \r, \n, \t y espacios múltiples
+<span class="fc" id="L137">                                return str.replaceAll(&quot;[\\r\\n\\t\\f]+&quot;, &quot; &quot;)</span>
+<span class="fc" id="L138">                                        .replaceAll(&quot;\\s{2,}&quot;, &quot; &quot;)</span>
+<span class="fc" id="L139">                                        .replaceAll(&quot;[\\p{Cntrl}&amp;&amp;[^\r\n\t]]+&quot;, &quot;&quot;)</span>
+<span class="fc" id="L140">                                        .trim();</span>
+                            }
+<span class="nc" id="L142">                            return entry.getValue();</span>
+                        }
+                ));
     }
 
 

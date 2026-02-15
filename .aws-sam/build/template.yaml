@@ -9,6 +9,15 @@ Parameters:
   UrlServicioExterno:
     Type: String
     Description: URL del servicio externo que la Lambda va a consumir
+  URL_SERVICIO_TOKEN:
+    Type: String
+    Description: URL del servicio para obtener token
+  CLIENT_ID:
+    Type: String
+    Description: Client ID
+  CLIENT_SECRET:
+    Type: String
+    Description: Client secret
 Globals:
   Function:
     Timeout: 20
@@ -16,6 +25,14 @@ Globals:
     LoggingConfig:
       LogFormat: JSON
 Resources:
+  MiParametroDeTabla:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /my-table-parameter
+      Type: String
+      Value: "{\n  \"key1\": \"value1\",\n  \"key2\": \"value2\",\n  \"key3\": \"\
+        value3\"\n}\n"
+      Description: "Par\xE1metro que simula una tabla de valores"
   MySqsQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -24,7 +41,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: HelloWorldFunction
-      Handler: helloworld.RPATranslatorLambda::handleRequest
+      Handler: helloworld.RPATranslatorLambda2::handleRequest
       Runtime: java21
       Architectures:
       - x86_64
@@ -39,6 +56,7 @@ Resources:
             Ref: CLIENT_ID
           CLIENT_SECRET:
             Ref: CLIENT_SECRET
+          TABLE_PARAMETER: '{{resolve:ssm:/my-table-parameter}}'
       Events:
         MySQSEvent:
           Type: SQS

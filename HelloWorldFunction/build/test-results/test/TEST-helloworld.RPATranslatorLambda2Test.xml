@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="helloworld.RPATranslatorLambda2Test" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-02-14T17:47:16" hostname="2MQ5111W0X" time="12.363">
+  <properties/>
+  <testcase name="processEvent_PayloadVacio_ProcesaEventoCompleto()" classname="helloworld.RPATranslatorLambda2Test" time="12.343"/>
+  <testcase name="processEvent_PayloadNoVacio_ProcesaPayload()" classname="helloworld.RPATranslatorLambda2Test" time="0.018"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\JATENCIA\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.14.15\b4cc9d88d5de562bf75b3a54ab436ad01b3f72d\byte-buddy-agent-1.14.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="helloworld.RPATranslatorLambda2primerTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-02-14T17:47:28" hostname="2MQ5111W0X" time="0.408">
+  <properties/>
+  <testcase name="processEventSafe_Exception_LanzaRuntimeException()" classname="helloworld.RPATranslatorLambda2primerTest" time="0.233"/>
+  <testcase name="handleRequest_MultipleMensajes_UnaFalla()" classname="helloworld.RPATranslatorLambda2primerTest" time="0.141"/>
+  <testcase name="processEvent_ComandoNull_LanzaIllegalArgument()" classname="helloworld.RPATranslatorLambda2primerTest" time="0.004"/>
+  <testcase name="handleRequest_MensajeConBodyVacio_FallaIndividual()" classname="helloworld.RPATranslatorLambda2primerTest" time="0.004"/>
+  <testcase name="processEventSafe_NoException_NoThrow()" classname="helloworld.RPATranslatorLambda2primerTest" time="0.006"/>
+  <testcase name="handleRequest_BatchExitoso_ReturnSQSBatchResponseVacio()" classname="helloworld.RPATranslatorLambda2primerTest" time="0.006"/>
+  <testcase name="processEvent_InputNull_LanzaIllegalArgument()" classname="helloworld.RPATranslatorLambda2primerTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

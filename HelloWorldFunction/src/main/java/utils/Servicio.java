@@ -1,5 +1,6 @@
 package utils;
 
+import Model.Evento;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -83,7 +84,7 @@ public class Servicio {
         }
     }
 
-    public static String JsonBody(String contenido) throws JsonProcessingException {
+    public static String JsonBody(String contenido, Evento evento) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
         // Limpiar caracteres de control invisibles
@@ -116,11 +117,11 @@ public class Servicio {
                 "SpecificContent":{
                   %s
                 },
-                "Reference": "CC_123456789",
-                "Progress": "Salesforce"
+                "Reference": "%s",
+                "Progress": "%s"
               }
             }
-            """,contenido);
+            """,contenido,evento.getId(),evento.getAplicacionEmisora().get("nombreAplicacionEmisora") != "" & evento.getAplicacionEmisora().get("nombreAplicacionEmisora")!=null ? evento.getAplicacionEmisora().get("nombreAplicacionEmisora").toString() : "Desconocida");
         logger.info("JSON Body generado: " + jsonString);
         return jsonString;
     }

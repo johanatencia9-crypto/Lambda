@@ -14,20 +14,32 @@ repositories {
 dependencies {
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.2'
     implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
-    testImplementation 'junit:junit:4.13.2'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'ch.qos.logback:logback-classic:1.4.11'
 
-    // 🔥 BATCH ESPECÍFICO (este es el que faltaba!)
-    implementation 'software.amazon.lambda:powertools-batch:2.42.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'  // ← AGREGADO!
+
+    testImplementation 'org.mockito:mockito-core:5.12.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.12.0'
 }
 
 test {
+    useJUnitPlatform()
     finalizedBy jacocoTestReport
+    testLogging {
+        showStandardStreams = true  // Logs del LambdaLogger
+        events "passed", "failed", "standard_out", "standard_error"
+    }
+    environment "CLIENT_ID", "test123"
+    environment "CLIENT_SECRET", "secret123"
+    environment "URL_SERVICIO_TOKEN", "https://fake-token.com"
+    environment "TABLE_PARAMETER", "{\"clave1\":\"valor1\",\"clave2\":\"valor2\"}"
+
 }
 
 jacocoTestReport {

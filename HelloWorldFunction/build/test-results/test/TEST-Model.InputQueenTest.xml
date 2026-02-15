@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Model.InputQueenTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-02-14T17:47:16" hostname="2MQ5111W0X" time="0.011">
+  <properties/>
+  <testcase name="comando_PuedeSerMapaVacio()" classname="Model.InputQueenTest" time="0.003"/>
+  <testcase name="comando_ModificarMapa_ReflejaCambios()" classname="Model.InputQueenTest" time="0.001"/>
+  <testcase name="comando_PuedeSerNulo()" classname="Model.InputQueenTest" time="0.002"/>
+  <testcase name="getterYSetter_Comando()" classname="Model.InputQueenTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

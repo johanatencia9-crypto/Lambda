@@ -8,6 +8,15 @@ Parameters:
   UrlServicioExterno:
     Type: String
     Description: "URL del servicio externo que la Lambda va a consumir"
+  URL_SERVICIO_TOKEN:
+    Type: String
+    Description: "URL del servicio para obtener token"
+  CLIENT_ID:
+    Type: String
+    Description: "Client ID"
+  CLIENT_SECRET:
+    Type: String
+    Description: "Client secret"
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -18,6 +27,18 @@ Globals:
     LoggingConfig:
       LogFormat: JSON
 Resources:
+  MiParametroDeTabla:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /my-table-parameter
+      Type: String
+      Value: |
+        {
+          "key1": "value1",
+          "key2": "value2",
+          "key3": "value3"
+        }
+      Description: "Parámetro que simula una tabla de valores"
   MySqsQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -26,7 +47,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: HelloWorldFunction
-      Handler: helloworld.RPATranslatorLambda::handleRequest
+      Handler: helloworld.RPATranslatorLambda2::handleRequest
       Runtime: java21
       Architectures:
       - x86_64
@@ -37,6 +58,7 @@ Resources:
           URL_SERVICIO_TOKEN: !Ref URL_SERVICIO_TOKEN
           CLIENT_ID: !Ref CLIENT_ID
           CLIENT_SECRET: !Ref CLIENT_SECRET
+          TABLE_PARAMETER: "{{resolve:ssm:/my-table-parameter}}"
       Events:
         MySQSEvent:
           Type: SQS

@@ -1,0 +1,9 @@
+{
+  "Records": [
+    {
+      "messageId": "1",
+      "receiptHandle": "abc",
+      "body": "{ \"comando\": { \"id\":\"a929552a-0910-4fbe-ab2a-589170aeea49\", \"idTrazabilidad\":\"Número caso Salesforce\", \"nombre\":\"    \", \"version\":\"1.0\", \"aplicacionEmisora\": { \"idAplicacionEmisora\":\"RPA\", \"nombreAplicacionEmisora\":\"RPACIN\", \"idTransaccionEmisora\":\"xx\", \"fechaTransaccion\":\"2017-07-21T13:05:00\" }, \"usuario\": { \"dni\":\"xx\", \"ip\":\"xx\", \"nombre\":\"xx\", \"canal\":\"xx\", \"telefono\":\"xx\", \"idSession\":\"xx\" }, \"dni\": { \"tipoIdentificacion\":\"xx\", \"identificacion\":\"xx\" }, \"timestamp\":1524154582758, \"payload\": { \"process\":\"Historia-Laboral\", \"idUsuario\":\"RPA\", \"TipoIdCliente\":\"TipoIdCliente\", \"NumeroIdCliente\":\"NumeroIdCliente\", \"idSesion\":\"generar id unico de evento consecutivo\", \"idSolicitud\":\"Numero caso salesforce\", \"descripcion\":\"Bogotá, Señores\", \"tipo\":\"tema sin apellido\", \"subTipo\":\"detalle sin apellido\", \"adjuntos\":[ { \"id\":\"adjunto6_page_02\", \"objectId\":\"obj-001\", \"nombreArchivo\":\"adjunto6_page_02.pdf\", \"numeroPagina\":1 } ] } } }"
+    }
+  ]
+}
